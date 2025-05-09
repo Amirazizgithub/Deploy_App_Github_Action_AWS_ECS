@@ -42,9 +42,6 @@ async def index(request: Request):
     return templates.TemplateResponse("template.html", {"request": request})
 
 
-# Removed the problematic @app.post("/") route.
-# The query submission is handled by the /query_response endpoint in routes.py.
-
 if __name__ == "__main__":
 
     uvicorn.run(

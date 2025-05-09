@@ -1,9 +1,12 @@
 black==25.1.0
-fastapi==0.103.1
+fastapi==0.115.12
 google-generativeai==0.8.1
 Jinja2==3.1.6
+httpx==0.28.1
 openai==1.60.0
 pymongo==4.5.0
+pytest==8.3.5
 python-dotenv==1.0.1
 setuptools==65.5.0
+starlette==0.46.2
 uvicorn==0.34.2

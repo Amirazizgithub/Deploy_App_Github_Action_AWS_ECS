@@ -88,7 +88,7 @@ class Generative_AI_Model:
         try:
             session_history = list(
                 self.mongodb_session_history_collection.find(
-                    {}, projection={"_id": 0, "user_query": 1, "model_response": 1}
+                    {}, projection={"_id": 0, "user_query": 1}
                 )
                 .sort("_id", -1)
                 .limit(10)

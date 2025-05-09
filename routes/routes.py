@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Request, HTTPException
-from fastapi.responses import JSONResponse
 from model.model import Generative_AI_Model
 import warnings
 
@@ -18,27 +17,29 @@ async def response_of_user_query(request: Request):
     try:
         data = await request.json()
         # Expecting keys 'user_query' and 'model_type' from the frontend
-        user_query = data.get("user_query")
-        model_type = data.get("model_type")
-
-        if not user_query or not model_type:
+        if "user_query" not in data or "model_type" not in data:
             raise HTTPException(
                 status_code=400, detail="user_query and model_type are required"
             )
+
+        user_query = data["user_query"]
+        model_type = data["model_type"]
 
         generative_ai_model = Generative_AI_Model()
         return generative_ai_model.generate_response_according_selected_model_type(
             model_type=model_type, user_query=user_query
         )
 
+    except HTTPException as e:
+        # Re-raise HTTP exceptions to ensure proper status codes
+        raise e
+
     except Exception as e:
-        # Log the error on the server side
-        print(f"Error in /query_response: {e}")
         # Return an error response as JSON
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Endpoint to response of the user query
+# Endpoint to fetch last 10 session history
 @routes.get("/session_history")
 async def get_session_history():
     try:
