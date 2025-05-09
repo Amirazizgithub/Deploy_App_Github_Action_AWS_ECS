@@ -32,6 +32,7 @@ API Deploy with GitHub Actions &amp; AWS EKS This repository automates the deplo
 |   |-- workflows/
 |   |   |-- ci-cd-pipeline.yaml
 |
+|-- __init__.py
 |-- app.py
 |-- requirements.txt
 |-- README.md
