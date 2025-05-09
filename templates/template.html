@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Interaction</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Generative AI Model</h1>
+
+        <div class="form-group">
+            <label for="model_type">Choose AI Model:</label>
+            <select id="model_type" name="model_type">
+                <option value="OpenAI">OpenAI</option>
+                <option value="Gemini">Gemini</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="user_query">Enter your query:</label>
+            <textarea id="user_query" name="user_query" rows="3" placeholder="Type your question or prompt here..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <button id="submit-query">Generate Response</button>
+        </div>
+
+        <div class="response-area">
+            <h2>Model Response:</h2>
+            <div id="model_response">
+                <p>Waiting for query...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const submitButton = document.getElementById('submit-query');
+        const modelTypeSelect = document.getElementById('model_type'); // Corrected variable name
+        const userQueryTextarea = document.getElementById('user_query'); // Corrected variable name
+        const modelResponseDiv = document.getElementById('model_response'); // Corrected variable name
+
+        submitButton.addEventListener('click', async () => {
+            // Get values using corrected variable names
+            const selectedModel = modelTypeSelect.value;
+            const queryText = userQueryTextarea.value;
+
+            if (!queryText.trim()) {
+                alert("Please enter a query.");
+                return;
+            }
+
+            // Clear previous response and show loading indicator
+            modelResponseDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                // Send POST request to the correct backend endpoint
+                const response = await fetch('/query_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        // Use keys expected by the backend endpoint
+                        model_type: selectedModel,
+                        user_query: queryText
+                    }),
+                });
+
+                if (!response.ok) {
+                     // Attempt to read error details from response body
+                    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorData.detail || JSON.stringify(errorData)}`);
+                }
+
+                // Assuming backend returns JSON with a 'message' key
+                const data = await response.json();
+                // Display the content of the 'message' key
+                modelResponseDiv.innerHTML = `<p>${data.message}</p>`;
+
+            } catch (error) {
+                console.error('Error fetching response:', error);
+                modelResponseDiv.innerHTML = `<p style="color: red;">Error getting response: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
