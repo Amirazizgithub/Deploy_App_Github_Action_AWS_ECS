@@ -1,5 +1,5 @@
 # Use the official lightweight Python 3.10 image as the base
-FROM python:3.10-slim-buster
+FROM python:3.11-slim-buster
 
 # Set the working directory inside the container
 WORKDIR /generative_ai_app
