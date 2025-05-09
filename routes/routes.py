@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
 from model.model import Generative_AI_Model
 import warnings
+
 warnings.filterwarnings("ignore")
 
 ## Global Route
@@ -9,10 +10,11 @@ routes = APIRouter()
 
 ## Routes for Generative AI Model APIs
 
+
 # Endpoint to response of the user query
 # This endpoint is intended to be called via AJAX/Fetch
 @routes.post("/query_response")
-async def response_of_user_query(request:Request):
+async def response_of_user_query(request: Request):
     try:
         data = await request.json()
         # Expecting keys 'user_query' and 'model_type' from the frontend
@@ -20,10 +22,14 @@ async def response_of_user_query(request:Request):
         model_type = data.get("model_type")
 
         if not user_query or not model_type:
-             raise HTTPException(status_code=400, detail="user_query and model_type are required")
+            raise HTTPException(
+                status_code=400, detail="user_query and model_type are required"
+            )
 
         generative_ai_model = Generative_AI_Model()
-        return generative_ai_model.generate_response_according_selected_model_type(model_type=model_type, user_query=user_query)
+        return generative_ai_model.generate_response_according_selected_model_type(
+            model_type=model_type, user_query=user_query
+        )
 
     except Exception as e:
         # Log the error on the server side

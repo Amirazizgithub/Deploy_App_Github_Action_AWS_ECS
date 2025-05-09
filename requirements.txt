@@ -1,7 +1,9 @@
+black==25.1.0
 fastapi==0.103.1
 google-generativeai==0.8.1
 Jinja2==3.1.6
 openai==1.60.0
 pymongo==4.5.0
 python-dotenv==1.0.1
+setuptools==65.5.0
 uvicorn==0.34.2

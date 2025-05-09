@@ -31,16 +31,16 @@ app.add_middleware(
 # This connects the /query_response and /session_history endpoints
 app.include_router(routes)
 
+
 # Endpoint to render the main HTML template
 # This handles the initial GET request to load the page
-@app.get("/", tags=["UI"]) # Added a tag for organization
+@app.get("/", tags=["UI"])  # Added a tag for organization
 async def index(request: Request):
     """
     Endpoint to render the main HTML template.
     """
-    return templates.TemplateResponse(
-        "template.html", {"request": request}
-    )
+    return templates.TemplateResponse("template.html", {"request": request})
+
 
 # Removed the problematic @app.post("/") route.
 # The query submission is handled by the /query_response endpoint in routes.py.
@@ -48,4 +48,7 @@ async def index(request: Request):
 if __name__ == "__main__":
     # Changed run function name back to uvicorn.run for clarity
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True) # Added reload=True for development
+
+    uvicorn.run(
+        app, host="0.0.0.0", port=8000, reload=True
+    )  # Added reload=True for development
