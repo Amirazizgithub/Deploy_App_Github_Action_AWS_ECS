@@ -11,6 +11,8 @@ list_of_files = [
     "routes/routes.py",
     "static/css/style.css",
     "templates/template.html",
+    "tests/__init__.py",
+    "tests/test_app_routes.py",
     ".github/workflows/ci-cd-pipeline.yaml",
     "app.py",
     "requirements.txt",

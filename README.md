@@ -24,6 +24,10 @@ API Deploy with GitHub Actions &amp; AWS EKS This repository automates the deplo
 |-- templates/
 |   |-- template.html
 |
+|-- tests/
+|   |-- __init__.py
+|   |-- test_app_routes.py
+|
 |-- .github/
 |   |-- workflows/
 |   |   |-- ci-cd-pipeline.yaml
