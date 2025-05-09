@@ -1,8 +1,8 @@
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from uvicorn import run as app_run
 from routes.routes import routes
 
 app = FastAPI()
@@ -46,8 +46,6 @@ async def index(request: Request):
 # The query submission is handled by the /query_response endpoint in routes.py.
 
 if __name__ == "__main__":
-    # Changed run function name back to uvicorn.run for clarity
-    import uvicorn
 
     uvicorn.run(
         app, host="0.0.0.0", port=8000, reload=True

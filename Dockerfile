@@ -1,12 +1,6 @@
 # Use the official lightweight Python 3.10 image as the base
 FROM python:3.10-slim-buster
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
 # Set the working directory inside the container
 WORKDIR /generative_ai_app
 

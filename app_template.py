@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 # Define the list of files to be created in the project
