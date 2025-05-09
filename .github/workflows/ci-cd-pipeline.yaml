@@ -46,7 +46,7 @@ jobs:
           pip install --no-cache-dir -r requirements.txt
 
       - name: Run Tests
-        run: pytest test_app_routes.py --disable-warnings
+        run: pytest test_app_routes.py
 
 
   Continuous-Integration:
