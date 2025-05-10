@@ -1,4 +1,4 @@
-# Use the official lightweight Python 3.10 image as the base
+# Use the official lightweight Python 3.11 image as the base
 FROM python:3.11-slim-buster
 
 # Set the working directory inside the container
