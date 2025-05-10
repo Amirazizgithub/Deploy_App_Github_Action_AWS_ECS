@@ -111,6 +111,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           service: generativeai-model-task-service-7qkuks8l
-          cluster: generativeai_model
+          cluster: generativeai-model
           task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
           wait-for-service-stability: true
