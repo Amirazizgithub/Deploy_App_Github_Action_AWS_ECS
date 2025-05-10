@@ -5,52 +5,50 @@ on:
     branches: [main]
 
 
-# jobs:
-  # format-check:
-  #   name: Check Code Formatting with Black
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: '3.11'
-  #         cache: 'pip'
-
-  #     - name: Install Black
-  #       run: pip install black
-
-  #     - name: Run Black check
-  #       run: black --check --verbose .
-
-  # test:
-  #   name: Run API Route Tests
-  #   needs: format-check
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: "3.11"
-
-  #     - name: Install Dependencies
-  #       run: |
-  #         pip install --no-cache-dir -r requirements.txt
-
-  #     - name: Run Tests
-  #       env:
-  #         PYTHONPATH: .
-  #       run: pytest -v tests/test_app_routes.py
-
 jobs:
-  
+  format-check:
+    name: Check Code Formatting with Black
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Black
+        run: pip install black
+
+      - name: Run Black check
+        run: black --check --verbose .
+
+  test:
+    name: Run API Route Tests
+    needs: format-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Run Tests
+        env:
+          PYTHONPATH: .
+        run: pytest -v tests/test_app_routes.py
+
   Continuous-Integration:
     name: Build and Push Docker Image
     needs: test
