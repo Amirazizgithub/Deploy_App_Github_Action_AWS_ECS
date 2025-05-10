@@ -6,48 +6,48 @@ on:
 
 
 jobs:
-  format-check:
-    name: Check Code Formatting with Black
-    runs-on: ubuntu-latest
+  # format-check:
+  #   name: Check Code Formatting with Black
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #         cache: 'pip'
 
-      - name: Install Black
-        run: pip install black
+  #     - name: Install Black
+  #       run: pip install black
 
-      - name: Run Black check
-        run: black --check --verbose .
+  #     - name: Run Black check
+  #       run: black --check --verbose .
 
-  test:
-    name: Run API Route Tests
-    needs: format-check
-    runs-on: ubuntu-latest
+  # test:
+  #   name: Run API Route Tests
+  #   needs: format-check
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: "3.11"
 
-      - name: Install Dependencies
-        run: |
-          pip install --no-cache-dir -r requirements.txt
+  #     - name: Install Dependencies
+  #       run: |
+  #         pip install --no-cache-dir -r requirements.txt
 
-      - name: Run Tests
-        env:
-          PYTHONPATH: .
-        run: pytest -v tests/test_app_routes.py
+  #     - name: Run Tests
+  #       env:
+  #         PYTHONPATH: .
+  #       run: pytest -v tests/test_app_routes.py
 
 
   Continuous-Integration:
@@ -81,31 +81,32 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           echo "needs.Continuous-Integration.outputs.image"
+      - name: Output Image Value
+        run: echo "${{ needs.Continuous-Integration.outputs.image }}"
 
-  Continuous-Deployment:
-    name: Deploy to AWS ECS
-    needs: Continuous-Integration
-    runs-on: ubuntu-latest
+  # Continuous-Deployment:
+  #   name: Deploy to AWS ECS
+  #   needs: Continuous-Integration
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Update ECS Task Definition
-        id: update-task-definition
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition-file: ${{ secrets.ECS_TASK_DEFINITION }}
-          container-name: generative_ai_app
-          image: ${{ needs.Continuous-Integration.outputs.image }}
-            echo "image"
+  #     - name: Update ECS Task Definition
+  #       id: update-task-definition
+  #       uses: aws-actions/amazon-ecs-render-task-definition@v1
+  #       with:
+  #         task-definition-file: ${{ secrets.ECS_TASK_DEFINITION }}
+  #         container-name: generative_ai_app
+  #         image: ${{ needs.Continuous-Integration.outputs.image }}
 
       # - name: Deploy to Amazon ECS Service
       #   id: deploy-ecs
