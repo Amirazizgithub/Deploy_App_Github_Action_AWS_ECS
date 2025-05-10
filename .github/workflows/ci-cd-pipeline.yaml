@@ -81,35 +81,35 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-  # Continuous-Deployment:
-  #   name: Deploy to AWS ECS
-  #   needs: Continuous-Integration
-  #   runs-on: ubuntu-latest
+  Continuous-Deployment:
+    name: Deploy to AWS ECS
+    needs: Continuous-Integration
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-  #     - name: Update ECS Task Definition
-  #       id: update-task-definition
-  #       uses: aws-actions/amazon-ecs-render-task-definition@v1
-  #       with:
-  #         task-definition-file: task-definition.json  # Path to your task definition file
-  #         container-name: generativeai_model_app #  The name of the container in the task definition to update
-  #         image: ${{ needs.Continuous-Integration.outputs.image }} # Use the image tag from the previous job
+      - name: Update ECS Task Definition
+        id: update-task-definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition-file: ${{ secrets.ECS_TASK_DEFINITION }}
+          container-name: generative_ai_app
+          image: ${{ needs.Continuous-Integration.outputs.image }}
 
-  #     - name: Deploy to Amazon ECS Service
-  #       id: deploy-ecs
-  #       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-  #       with:
-  #         service: generativeai_model_tesk  # Name of your ECS service
-  #         cluster: generativeai_model_app # Name of your ECS cluster
-  #         task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
-  #         wait-for-service-stability: true #wait for the service to become stable
+      - name: Deploy to Amazon ECS Service
+        id: deploy-ecs
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          service: generativeai-model-task-service-7qkuks8l  
+          cluster: generativeai_model 
+          task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
+          wait-for-service-stability: true 
