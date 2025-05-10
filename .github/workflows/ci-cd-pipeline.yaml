@@ -103,7 +103,7 @@ jobs:
         with:
           task-definition-file: ${{ secrets.ECS_TASK_DEFINITION }}
           container-name: generative_ai_app
-          image: ${{ env.image }}
+          image: ${{ needs.Continuous-Integration.outputs.image }}
 
       - name: Deploy to Amazon ECS Service
         id: deploy-ecs
