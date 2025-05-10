@@ -80,6 +80,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .  
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "needs.Continuous-Integration.outputs.image"
 
   Continuous-Deployment:
     name: Deploy to AWS ECS
@@ -104,12 +105,13 @@ jobs:
           task-definition-file: ${{ secrets.ECS_TASK_DEFINITION }}
           container-name: generative_ai_app
           image: ${{ needs.Continuous-Integration.outputs.image }}
+            echo "image"
 
-      - name: Deploy to Amazon ECS Service
-        id: deploy-ecs
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          service: generativeai-model-task-service-7qkuks8l  
-          cluster: generativeai_model 
-          task-definition: ${{ steps.update-task-definition.outputs.task-definition-file }}
-          wait-for-service-stability: true 
+      # - name: Deploy to Amazon ECS Service
+      #   id: deploy-ecs
+      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      #   with:
+      #     service: generativeai-model-task-service-7qkuks8l  
+      #     cluster: generativeai_model 
+      #     task-definition: ${{ steps.update-task-definition.outputs.task-definition-file }}
+      #     wait-for-service-stability: true 
