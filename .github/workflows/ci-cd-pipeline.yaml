@@ -1,63 +1,124 @@
-name: Deploy to Amazon ECS
+name: Deploy Application Docker Image to AWS ECS Cluster
 
 on:
   push:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
+    branches: [main]
 
 jobs:
-  deploy:
-    name: Deploy
+  format-check:
+    name: Check Code Formatting with Black
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Install Black
+        run: pip install black
 
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO }}
-        IMAGE_TAG: latest
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      - name: Run Black check
+        run: black --check --verbose .
 
-    - name: Create ECS task definition file from secret
-      run: echo "${{ secrets.ECS_TASK_DEFINITION }}" > ecs-task-definition.json
+  test:
+    name: Run API Route Tests
+    needs: format-check
+    runs-on: ubuntu-latest
 
-    - name: Debug Task Definition File
-      run: cat ecs-task-definition.json
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Fill in the new image ID in the Amazon ECS task definition
-      id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: ecs-task-definition.json
-        container-name: generative_ai_app
-        image: ${{ steps.build-image.outputs.image }}
+      - name: Install Dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
 
-    - name: Deploy Amazon ECS task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: generativeai-model-task-service-7qkuks8l
-        cluster: generativeai_model
-        wait-for-service-stability: true
+      - name: Run Tests
+        env:
+          PYTHONPATH: .
+        run: pytest -v tests/test_app_routes.py
+
+  Continuous-Integration:
+    name: Build and Push Docker Image
+    needs: test
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO }}
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .  
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  Continuous-Deployment:
+    name: Deploy to AWS ECS
+    needs: Continuous-Integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create ECS task definition file from secret
+        run: |
+          echo "${{ secrets.ECS_TASK_DEFINITION }}" > ecs-task-definition.json
+
+      - name: Output Image Value (Debugging)
+        run: |
+          echo "Image URI: ${{ secrets.LATEST_IMAGE_URI }}"
+
+      - name: Update ECS Task Definition
+        id: update-task-definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ecs-task-definition.json
+          container-name: generative_ai_app
+          image: ${{ secrets.LATEST_IMAGE_URI }}
+
+      - name: Deploy to Amazon ECS Service
+        id: deploy-ecs
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          service: generativeai-model-task-service-7qkuks8l
+          cluster: generativeai_model
+          task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
+          wait-for-service-stability: true
