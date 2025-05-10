@@ -111,5 +111,5 @@ jobs:
         with:
           service: generativeai-model-task-service-7qkuks8l  
           cluster: generativeai_model 
-          task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
+          task-definition: ${{ steps.update-task-definition.outputs.task-definition-file }}
           wait-for-service-stability: true 
