@@ -1,0 +1,113 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:622539661644:task-definition/generativeai-model-task:5",
+    "containerDefinitions": [
+        {
+            "name": "generative_ai_app",
+            "image": "622539661644.dkr.ecr.ap-south-1.amazonaws.com/generativeai_model:latest",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "generative_ai_app-8000-tcp",
+                    "containerPort": 8000,
+                    "hostPort": 8000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "MONGODB_URI",
+                    "value": "mongodb+srv://amirds0235:Amir%40mlops@us-visa-prediction.2tsjh.mongodb.net/"
+                },
+                {
+                    "name": "MONGODB_DATABASE_NAME",
+                    "value": "Generative_AI_Model"
+                },
+                {
+                    "name": "OPENAI_API_KEY",
+                    "value": "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"
+                },
+                {
+                    "name": "MONGODB_SESSION_HISTORY_COLLECTION",
+                    "value": "Model_Session_History"
+                },
+                {
+                    "name": "GEMINI_API_KEY",
+                    "value": "AIzaSyCDwoxINVZyAmIbiRVhqNiipkoj-PByaeg"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/generativeai-model-task",
+                    "mode": "non-blocking",
+                    "awslogs-create-group": "true",
+                    "max-buffer-size": "25m",
+                    "awslogs-region": "ap-south-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "generativeai-model-task",
+    "taskRoleArn": "arn:aws:iam::622539661644:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::622539661644:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "revision": 5,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.28"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "2048",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2025-05-10T14:14:53.942Z",
+    "registeredBy": "arn:aws:iam::622539661644:root",
+    "enableFaultInjection": false,
+    "tags": []
+}
