@@ -105,6 +105,9 @@ jobs:
       - name: Create ECS task definition file from secret
         run: echo '${{ secrets.ECS_TASK_DEFINITION }}' > ecs-task-definition.json
 
+      - name: Output Image Value (Debugging)
+        run: echo "Image URI :- ${{ needs.Continuous-Integration.outputs.image }}
+
       - name: Update ECS Task Definition
         id: update-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
