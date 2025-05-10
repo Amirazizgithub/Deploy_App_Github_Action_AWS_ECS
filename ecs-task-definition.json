@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:622539661644:task-definition/generativeai-model-task:5",
+    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:622539661644:task-definition/generativeai-model-task:7",
     "containerDefinitions": [
         {
             "name": "generative_ai_app",
@@ -15,30 +15,31 @@
                 }
             ],
             "essential": true,
-            "environment": [
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "secrets": [
                 {
-                    "name": "MONGODB_URI",
-                    "value": "mongodb+srv://amirds0235:Amir%40mlops@us-visa-prediction.2tsjh.mongodb.net/"
+                    "name": "GEMINI_API_KEY",
+                    "valueFrom": "arn:aws:ssm:ap-south-1:622539661644:parameter/GEMINI_API_KEY"
                 },
                 {
                     "name": "MONGODB_DATABASE_NAME",
-                    "value": "Generative_AI_Model"
-                },
-                {
-                    "name": "OPENAI_API_KEY",
-                    "value": "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"
+                    "valueFrom": "arn:aws:ssm:ap-south-1:622539661644:parameter/MONGODB_DATABASE_NAME"
                 },
                 {
                     "name": "MONGODB_SESSION_HISTORY_COLLECTION",
-                    "value": "Model_Session_History"
+                    "valueFrom": "arn:aws:ssm:ap-south-1:622539661644:parameter/MONGODB_SESSION_HISTORY_COLLECTION"
                 },
                 {
-                    "name": "GEMINI_API_KEY",
-                    "value": "AIzaSyCDwoxINVZyAmIbiRVhqNiipkoj-PByaeg"
+                    "name": "MONGODB_URI",
+                    "valueFrom": "arn:aws:ssm:ap-south-1:622539661644:parameter/MONGODB_URI"
+                },
+                {
+                    "name": "OPENAI_API_KEY",
+                    "valueFrom": "arn:aws:ssm:ap-south-1:622539661644:parameter/OPENAI_API_KEY"
                 }
             ],
-            "mountPoints": [],
-            "volumesFrom": [],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
@@ -48,7 +49,8 @@
                     "max-buffer-size": "25m",
                     "awslogs-region": "ap-south-1",
                     "awslogs-stream-prefix": "ecs"
-                }
+                },
+                "secretOptions": []
             },
             "systemControls": []
         }
@@ -57,7 +59,7 @@
     "taskRoleArn": "arn:aws:iam::622539661644:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::622539661644:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 5,
+    "revision": 7,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -83,6 +85,9 @@
             "name": "ecs.capability.execution-role-ecr-pull"
         },
         {
+            "name": "ecs.capability.secrets.ssm.environment-variables"
+        },
+        {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
         },
         {
@@ -106,7 +111,7 @@
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2025-05-10T14:14:53.942Z",
+    "registeredAt": "2025-05-10T21:22:23.995Z",
     "registeredBy": "arn:aws:iam::622539661644:root",
     "enableFaultInjection": false,
     "tags": []
