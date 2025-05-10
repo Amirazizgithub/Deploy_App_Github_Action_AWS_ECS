@@ -106,7 +106,7 @@ jobs:
         run: echo '${{ secrets.ECS_TASK_DEFINITION }}' > ecs-task-definition.json
 
       - name: Output Image Value (Debugging)
-        run: echo "Image URI :- ${{ needs.Continuous-Integration.outputs.image }}
+        run: echo ${{ needs.Continuous-Integration.outputs.image }}
 
       - name: Update ECS Task Definition
         id: update-task-definition
