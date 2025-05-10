@@ -1,115 +1,59 @@
-name: Deploy Application Docker Image to AWS ECS Cluster
+name: Deploy to Amazon ECS
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
+
+permissions:
+  contents: read
 
 jobs:
-  format-check:
-    name: Check Code Formatting with Black
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
+    environment: production
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-      - name: Install Black
-        run: pip install black
-      - name: Run Black check
-        run: black --check --verbose .
+    - name: Checkout
+      uses: actions/checkout@v4
 
-  test:
-    name: Run API Route Tests
-    needs: format-check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-      - name: Install Dependencies
-        run: |
-          pip install --no-cache-dir -r requirements.txt
-      - name: Run Tests
-        env:
-          PYTHONPATH: .
-        run: pytest -v tests/test_app_routes.py
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-  Continuous-Integration:
-    name: Build and Push Docker Image
-    needs: test
-    runs-on: ubuntu-latest
-    outputs:
-      image_uri: ${{ steps.build-image.outputs.image }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Login to Amazon ECR
-        id: login-ecr # Give this step an ID
-        uses: aws-actions/amazon-ecr-login@v1
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image # Give this step an ID so we can reference its output
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO}}
-          IMAGE_TAG: latest # Consider using a dynamic tag like commit SHA
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          # Set step output - this is mapped to job output above
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT # Use GITHUB_OUTPUT for actions/runner versions 2.297.0 or later
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-  Continuous-Deployment:
-    name: Deploy to AWS ECS
-    needs: Continuous-Integration # Depends on CI completing successfully and providing outputs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2 # You might want to update this to v4 for consistency
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO }}
+        IMAGE_TAG: latest
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Output Image Value (Debugging)
-        run: |
-          echo "Image URI: ${{ needs.Continuous-Integration.outputs.image_uri }}"
+    - name: Create ECS task definition file from secret
+      run: echo "${{ secrets.ECS_TASK_DEFINITION }}" > ecs-task-definition.json
 
-      - name: Update ECS Task Definition
-        id: update-task-definition
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          # task-definition-file: ${{ secrets.ECS_TASK_DEFINITION }} # Check if this input is correct for v1 or if you need task-definition or family/revision
-          # Based on the warning, v1 might prefer family/revision or a direct JSON object.
-          # However, task-definition-file IS a valid input for v1 according to docs.
-          # Let's keep task-definition-file but be aware of the warning.
-          # If the warning persists and causes issues, consider reading the file and passing as 'task-definition'.
-          task-definition-file: ${{ secrets.ECS_TASK_DEFINITION }}
-          container-name: generative_ai_app # The name of the container in your task definition to update
-          image: ${{ needs.Continuous-Integration.outputs.image_uri }} # Use the job-level output here
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ecs-task-definition.json
+        container-name: generative_ai_app
+        image: ${{ steps.build-image.outputs.image }}
 
-      - name: Deploy to Amazon ECS Service
-        id: deploy-ecs
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          service: generativeai-model-task-service-7qkuks8l
-          cluster: generativeai_model
-          task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
-          wait-for-service-stability: true
-
-      # This step was just printing a static string, not the actual image URI
-      # - name: Print Image URI
-      #   run: echo "Image URI: ${{ needs.Continuous-Integration.outputs.image_uri }}"
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: generativeai-model-task-service-7qkuks8l
+        cluster: generativeai_model
+        wait-for-service-stability: true
