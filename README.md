@@ -1,4 +1,5 @@
-# API Deployment with GitHub Actions, AWS ECR, and ECS
+# APP Deployment with GitHub Actions, AWS ECR, and ECS
+**Deploy_App_Github_Action_AWS_ECS** repository automates the deployment of an API to AWS Elastic Container Service (ECS) using GitHub Actions. It includes CI/CD workflows for formatting, testing, building, and deploying containerized applications efficiently.
 
 This repository demonstrates how to deploy a FastAPI-based application using GitHub Actions for CI/CD and AWS Elastic Container Service (ECS) for hosting. The project includes automated workflows for building, testing, and deploying containerized applications efficiently.
 
